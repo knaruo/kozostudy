@@ -1,0 +1,13 @@
+# Python files
+*.pyo
+*.pyc
+
+# C artifacts
+*.o
+*.elf
+*.mot
+
+# Project specific
+kzload
+kozos
+

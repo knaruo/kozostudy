@@ -254,9 +254,10 @@ static void thread_intr(softvec_type_t type, unsigned long sp)
 }
 
 
-void kz_start(kz_func_t func, char *name, int stacksize,
+void kz_start(kz_func_t func, char *name, int priority, int stacksize,
               int argc, char *argv[])
 {
+    (void)priority;
     current = NULL;
 
     readyque.head = readyque.tail = NULL;

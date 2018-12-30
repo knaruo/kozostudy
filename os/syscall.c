@@ -4,7 +4,7 @@
 
 
 kz_thread_id_t  kz_run(kz_func_t func,
-                       char *name, int stacksize,
+                       char *name, int priority, int stacksize,
                        int argc, char *argv[])
 {
     kz_syscall_param_t  param;
@@ -14,6 +14,7 @@ kz_thread_id_t  kz_run(kz_func_t func,
     param.un.run.argc = argc;
     param.un.run.argv = argv;
     kz_syscall(KZ_SYSCALL_TYPE_RUN, &param);
+    (void)priority;
     return param.un.run.ret;
 }
 

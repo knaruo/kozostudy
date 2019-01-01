@@ -3,6 +3,11 @@
 
 #include <defines.h>
 
+
+/* ---
+ * Data type definitions
+ * --- */
+/* System call types */
 typedef enum {
     KZ_SYSCALL_TYPE_RUN = 0,
     KZ_SYSCALL_TYPE_EXIT,
@@ -13,6 +18,8 @@ typedef enum {
     KZ_SYSCALL_TYPE_CHPRI,
 } kz_syscall_type_t;
 
+
+/* types for workspace variable for each system calls */
 typedef struct {
     union {
         struct {

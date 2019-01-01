@@ -1,3 +1,7 @@
+/* -----------------------------------------------------
+    Define each system call functions
+    Each function calls kz_syscall() inside
+   ----------------------------------------------------- */
 #include <defines.h>
 #include <kozos.h>
 #include "syscall.h"

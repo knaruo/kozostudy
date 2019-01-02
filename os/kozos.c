@@ -58,9 +58,9 @@ static kz_handler_t handlers[SOFTVEC_TYPE_NUM];
 /* ------
  * Function prototypes
  * ------ */
-void dispatch(kz_context *context);
-static int getcurrent(void);
-static int putcurrent(void);
+void dispatch(kz_context *context); // defined in startup.s
+static int pop_current_from_readyque(void);
+static int push_current_to_readyque(void);
 static void thread_end(void);
 static void thread_init(kz_thread *thp);
 static kz_thread_id_t thread_run(kz_func_t func, char *name, int priority, int stacksize, int argc, char *argv[]);
@@ -82,7 +82,11 @@ static void thread_intr(softvec_type_t type, unsigned long sp);
 /* ------
  * Functions
  * ------ */
-static int getcurrent(void)
+/* ----------------------------------------------------------
+ * Description:
+ *  Get (pop) the current thread from the ready queue
+ * ---------------------------------------------------------- */
+static int pop_current_from_readyque(void)
 {
     if (current == NULL) return -1;
 
@@ -91,19 +95,26 @@ static int getcurrent(void)
         return 1;
     }
 
+    /* Connect the next node to the head of the ready queue */
     readyque[current->priority].head = current->next;
+
     if (readyque[current->priority].head == NULL) {
         readyque[current->priority].tail = NULL;
     }
     /* Clear READY */
     current->flags &= ~KZ_THREAD_FLAG_READY;
+
     current->next = NULL;
 
     return 0;
 }
 
 
-static int putcurrent(void)
+/* ----------------------------------------------------------
+ * Description:
+ *  Put (push) the current thread into the ready queue
+ * ---------------------------------------------------------- */
+static int push_current_to_readyque(void)
 {
     if (current==NULL) return -1;
 
@@ -112,10 +123,12 @@ static int putcurrent(void)
         return 1;
     }
 
+    /* Append the current node to the end of the queue */
     if (readyque[current->priority].tail) {
         readyque[current->priority].tail->next = current;
     }
     else {
+        /* in case there is no node in this priority */
         readyque[current->priority].head = current;
     }
     readyque[current->priority].tail = current;
@@ -126,12 +139,18 @@ static int putcurrent(void)
 }
 
 
+/* ----------------------------------------------------------
+ * Description:
+ * ---------------------------------------------------------- */
 static void thread_end(void)
 {
     kz_exit();
 }
 
 
+/* ----------------------------------------------------------
+ * Description:
+ * ---------------------------------------------------------- */
 static void thread_init(kz_thread *thp)
 {
     thp->init.func(thp->init.argc, thp->init.argv);
@@ -139,6 +158,9 @@ static void thread_init(kz_thread *thp)
 }
 
 
+/* ----------------------------------------------------------
+ * Description:
+ * ---------------------------------------------------------- */
 static kz_thread_id_t thread_run(kz_func_t func, char *name, int priority, int stacksize, int argc, char *argv[])
 {
     int i;
@@ -147,11 +169,13 @@ static kz_thread_id_t thread_run(kz_func_t func, char *name, int priority, int s
     extern char userstack;
     static char *thread_stack = &userstack;
 
+    /* Find an available thread */
     for (i = 0; i < THREAD_NUM; i++) {
         thp = &threads[i];
         if (!thp->init.func)
             break;
     }
+    /* if not found, then return invalid thread ID */
     if (i==THREAD_NUM)
         return -1;
 
@@ -187,16 +211,19 @@ static kz_thread_id_t thread_run(kz_func_t func, char *name, int priority, int s
 
     thp->context.sp = (uint32)sp;
 
-    putcurrent();
+    push_current_to_readyque();
 
     current = thp;
 
-    putcurrent();
+    push_current_to_readyque();
 
     return (kz_thread_id_t)current;
 }
 
 
+/* ----------------------------------------------------------
+ * Description:
+ * ---------------------------------------------------------- */
 static int thread_exit(void)
 {
     puts(current->name);
@@ -206,51 +233,69 @@ static int thread_exit(void)
 }
 
 
+/* ----------------------------------------------------------
+ * Description:
+ * ---------------------------------------------------------- */
 static int thread_wait(void)
 {
-    putcurrent();
+    push_current_to_readyque();
     return 0;
 }
 
 
+/* ----------------------------------------------------------
+ * Description:
+ * ---------------------------------------------------------- */
 static int thread_sleep(void)
 {
     return 0;
 }
 
 
+/* ----------------------------------------------------------
+ * Description:
+ * ---------------------------------------------------------- */
 static int thread_wakeup(kz_thread_id_t id)
 {
     /* caller thread goes to ready que */
-    putcurrent();
+    push_current_to_readyque();
 
     /* connect the specified thread to ready que,
        then wake it up */
     current = (kz_thread *)id;
-    putcurrent();
+    push_current_to_readyque();
 
     return 0;
 }
 
 
+/* ----------------------------------------------------------
+ * Description:
+ * ---------------------------------------------------------- */
 static kz_thread_id_t thread_getid(void)
 {
-    putcurrent();
+    push_current_to_readyque();
     return (kz_thread_id_t)current;
 }
 
 
+/* ----------------------------------------------------------
+ * Description:
+ * ---------------------------------------------------------- */
 static int thread_chpri(int priority)
 {
     int old = current->priority;
     if (priority >= 0) {
         current->priority = priority;
     }
-    putcurrent();
+    push_current_to_readyque();
     return old;
 }
 
 
+/* ----------------------------------------------------------
+ * Description:
+ * ---------------------------------------------------------- */
 static int setintr(softvec_type_t type, kz_handler_t handler)
 {
 
@@ -262,6 +307,9 @@ static int setintr(softvec_type_t type, kz_handler_t handler)
 }
 
 
+/* ----------------------------------------------------------
+ * Description:
+ * ---------------------------------------------------------- */
 static void call_functions(kz_syscall_type_t type, kz_syscall_param_t *p)
 {
     switch (type) {
@@ -297,13 +345,19 @@ static void call_functions(kz_syscall_type_t type, kz_syscall_param_t *p)
 }
 
 
+/* ----------------------------------------------------------
+ * Description:
+ * ---------------------------------------------------------- */
 static void syscall_proc(kz_syscall_type_t type, kz_syscall_param_t *p)
 {
-    getcurrent();
+    pop_current_from_readyque();
     call_functions(type, p);
 }
 
 
+/* ----------------------------------------------------------
+ * Description:
+ * ---------------------------------------------------------- */
 static void schedule(void)
 {
     int i;
@@ -320,21 +374,30 @@ static void schedule(void)
 }
 
 
+/* ----------------------------------------------------------
+ * Description:
+ * ---------------------------------------------------------- */
 static void syscall_intr(void)
 {
     syscall_proc(current->syscall.type, current->syscall.param);
 }
 
 
+/* ----------------------------------------------------------
+ * Description:
+ * ---------------------------------------------------------- */
 static void softerr_intr(void)
 {
     puts(current->name);
     puts(" DOWN.\n");
-    getcurrent();
+    pop_current_from_readyque();
     thread_exit();
 }
 
 
+/* ----------------------------------------------------------
+ * Description:
+ * ---------------------------------------------------------- */
 static void thread_intr(softvec_type_t type, unsigned long sp)
 {
     current->context.sp = sp;
@@ -348,6 +411,9 @@ static void thread_intr(softvec_type_t type, unsigned long sp)
 }
 
 
+/* ----------------------------------------------------------
+ * Description:
+ * ---------------------------------------------------------- */
 void kz_start(kz_func_t func, char *name, int priority, int stacksize,
               int argc, char *argv[])
 {
@@ -368,6 +434,9 @@ void kz_start(kz_func_t func, char *name, int priority, int stacksize,
 }
 
 
+/* ----------------------------------------------------------
+ * Description:
+ * ---------------------------------------------------------- */
 void kz_sysdown(void)
 {
     puts("system error!\n");
@@ -375,6 +444,9 @@ void kz_sysdown(void)
 }
 
 
+/* ----------------------------------------------------------
+ * Description:
+ * ---------------------------------------------------------- */
 void kz_syscall(kz_syscall_type_t type, kz_syscall_param_t *param)
 {
     current->syscall.type = type;

@@ -24,7 +24,7 @@ typedef struct _kz_context {
 } kz_context;
 
 typedef struct _kz_thread {
-    struct _kz_context  *next;
+    struct _kz_thread  *next;
     char    name[THREAD_NAME_SIZE + 1];
     int     priority;
     char    *stack;
@@ -376,6 +376,7 @@ static void schedule(void)
 
 /* ----------------------------------------------------------
  * Description:
+ *  Run currently active system call function
  * ---------------------------------------------------------- */
 static void syscall_intr(void)
 {

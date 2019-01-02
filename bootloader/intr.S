@@ -29,6 +29,16 @@ _intr_softerr:
     mov.l   @er7+,er6
     rte
 
+# ---------------------------------------
+# _intr_syscall:
+#   Called by "trapa #0"
+#   - Push register values to thread stack
+#   - Call interrupt
+#       er0: interrupt type (ex: syscall)
+#       er1: stack pointer
+#       (refer to lib/interrupt.c)
+#   - Restore register values
+# ---------------------------------------
     .global _intr_syscall
     .type   _intr_syscall,@function
 _intr_syscall:

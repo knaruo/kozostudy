@@ -20,6 +20,10 @@ int softvec_setintr(softvec_type_t type, softvec_handler_t handler)
 }
 
 
+/* -------------------------------------------------------------
+ * Description:
+ *  Generic interrupt handler called from bootloader/intr.S
+ * ------------------------------------------------------------- */
 void interrupt(softvec_type_t type, unsigned long sp)
 {
     softvec_handler_t handler = SOFTVECS[type];

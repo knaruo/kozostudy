@@ -13,7 +13,7 @@ OBJDUMP = $(BINDIR)/$(ADDNAME)objdump
 RANLIB = $(BINDIR)/$(ADDNAME)ranlib
 STRIP = $(BINDIR)/$(ADDNAME)strip
 
-OBJS = vector.o startup.o main.o syscall.o kozos.o
+OBJS = vector.o startup.o main.o syscall.o kozos.o memory.o
 OBJS += test09_1.o test09_2.o test09_3.o
 LIBS = ../lib/libcommon.a
 

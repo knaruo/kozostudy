@@ -14,6 +14,9 @@ int kz_sleep(void);
 int kz_wakeup(kz_thread_id_t id);
 kz_thread_id_t kz_getid(void);
 int kz_chpri(int priority);
+void *kz_kmalloc(int size);
+int kz_kmfree(void *p);
+
 
 void kz_start(kz_func_t func, char *name, int priority, int stacksize,
               int argc, char *argv[]);

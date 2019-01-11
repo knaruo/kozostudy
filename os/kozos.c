@@ -494,7 +494,7 @@ static void call_functions(kz_syscall_type_t type, kz_syscall_param_t *p)
             p->un.kmalloc.ret = thread_kmalloc(p->un.kmalloc.size);
             break;
         case KZ_SYSCALL_TYPE_KMFREE:
-            p->un.kmfree.ret = thread_kmalloc(p->un.kmfree.p);
+            p->un.kmfree.ret = thread_kmfree(p->un.kmfree.p);
             break;
         case KZ_SYSCALL_TYPE_SEND:
             p->un.send.ret = thread_send(p->un.send.id, p->un.send.size, p->un.send.p);

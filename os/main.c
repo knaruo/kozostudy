@@ -7,16 +7,13 @@
 /* ---
  * Variables
  * --- */
-// Thread IDs
-kz_thread_id_t test09_1_id;
-kz_thread_id_t test09_2_id;
-kz_thread_id_t test09_3_id;
-
 
 /* ---
  * Function prototypes
  * --- */
 static int idle_task(int argc, char *argv[]);
+extern int consdrv_main(int argc, char *argv[]);
+extern int command_main(int argc, char *argv[]);
 
 
 /* ---
@@ -25,9 +22,8 @@ static int idle_task(int argc, char *argv[]);
 static int idle_task(int argc, char *argv[])
 {
     /* start each threads */
-    test09_1_id = kz_run(test09_1_main, "test09_1", 1, 0x100, 0, NULL);
-    test09_2_id = kz_run(test09_2_main, "test09_2", 2, 0x100, 0, NULL);
-    test09_3_id = kz_run(test09_3_main, "test09_3", 3, 0x100, 0, NULL);
+    kz_run(consdrv_main, "consdrv", 1, 0x200, 0, NULL);
+    kz_run(command_main, "command", 1, 0x200, 0, NULL);
 
     /* lower this thread's priority */
     kz_chpri(15);

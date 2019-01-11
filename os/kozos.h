@@ -16,6 +16,8 @@ kz_thread_id_t kz_getid(void);
 int kz_chpri(int priority);
 void *kz_kmalloc(int size);
 int kz_kmfree(void *p);
+int kz_send(kz_msgbox_id_t id, int size, char *p);
+kz_thread_id_t kz_recv(kz_msgbox_id_t id, int *sizep, char **pp);
 
 
 void kz_start(kz_func_t func, char *name, int priority, int stacksize,

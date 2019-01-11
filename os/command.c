@@ -23,7 +23,7 @@ static void send_write(char *str)
 {
     char *p;
     int len;
-    len = srtlen(str);
+    len = strlen(str);
     p = kz_kmalloc(len + 2);
     p[0] = '0';
     p[1] = CONSDRV_CMD_WRITE;

@@ -10,9 +10,13 @@ _start:
 1:
     bra     1b
 
+
+# -------------------------------------
+# dispatch
+#   Load the stored register values from memory
+# -------------------------------------
     .global _dispatch
     .type   _dispatch,@function
-
 _dispatch:
     mov.l   @er0,er7
     mov.l   @er7+,er0

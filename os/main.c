@@ -23,7 +23,7 @@ static int idle_task(int argc, char *argv[])
 {
     /* start each threads */
     kz_run(consdrv_main, "consdrv", 1, 0x200, 0, NULL);
-    kz_run(command_main, "command", 1, 0x200, 0, NULL);
+    kz_run(command_main, "command", 8, 0x200, 0, NULL);
 
     /* lower this thread's priority */
     kz_chpri(15);

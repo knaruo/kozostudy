@@ -105,7 +105,7 @@ static int consdrv_intrproc(struct consreg *cons)
                 cons->recv_buf[cons->recv_len++] = c;
             }
             else {
-                p = kz_kmalloc(CONS_BUFFER_SIZE);
+                p = kx_kmalloc(CONS_BUFFER_SIZE);
                 memcpy(p, cons->recv_buf, cons->recv_len);
                 kx_send(MSGBOX_ID_CONSINPUT, cons->recv_len, p);
                 cons->recv_len = 0;
